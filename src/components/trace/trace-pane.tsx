@@ -182,6 +182,8 @@ const RunView = memo(function RunView({ run, frames, onOpen }: { run: AgentRun; 
   })
 
   const text = answer?.markdown ?? streaming
+  const decided = ev.some((e) => e.type === 'decision')
+  const writing = run.status === 'running' && decided && !text
   return (
     <section className="space-y-4">
       <header className="space-y-1.5">
@@ -211,6 +213,19 @@ const RunView = memo(function RunView({ run, frames, onOpen }: { run: AgentRun; 
       )}
 
       {items.length > 0 && <ol className="space-y-3">{items}</ol>}
+
+      {writing && (
+        <div className="lt-rise rounded-lg border border-line px-3.5 py-3">
+          <div className="flex items-center gap-2">
+            <span className="eyebrow">Assessment</span>
+            {start?.models.answer && <ModelBadge model={start.models.answer.model} effort={start.models.answer.effort} />}
+            <span className="lt-pulse ml-auto font-mono text-[0.6rem] text-accent">writing</span>
+          </div>
+          <div className="mt-3 space-y-2" aria-hidden>
+            {[92, 78, 85].map((w, i) => <div key={i} className="lt-pulse h-2 rounded bg-line" style={{ width: `${w}%`, animationDelay: `${i * 0.2}s` }} />)}
+          </div>
+        </div>
+      )}
 
       {text && (
         <div className="lt-rise rounded-lg border border-line-2 bg-panel-solid/60 px-3.5 py-3">
@@ -250,34 +265,64 @@ export function usageTotals(runs: AgentRun[]) {
 export function TracePane({ runs, frames, onOpen, idleHint }: { runs: AgentRun[]; frames: CameraFrame[]; onOpen: (id: string) => void; idleHint?: string }) {
   const scroller = useRef<HTMLDivElement>(null)
   const pinned = useRef(true)
+  const userScroll = useRef(0)
   const sig = runs.map((r) => r.events.length).join(',')
+  const content = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const el = scroller.current
     if (el && pinned.current) el.scrollTop = el.scrollHeight
   }, [sig])
+  // Images and markdown change height after render: keep following the bottom while pinned.
+  useEffect(() => {
+    const el = scroller.current, inner = content.current
+    if (!el || !inner) return
+    const ro = new ResizeObserver(() => { if (pinned.current) el.scrollTop = el.scrollHeight })
+    ro.observe(inner)
+    return () => ro.disconnect()
+  }, [])
   const u = usageTotals(runs)
   const running = runs.some((r) => r.status === 'running')
+  const cur = runs[runs.length - 1]
+  const status = !cur ? null
+    : cur.status === 'error' ? 'error'
+    : cur.status !== 'running' ? 'done'
+    : cur.events.some((e) => e.type === 'answer_delta') ? 'writing assessment'
+    : cur.events.some((e) => e.type === 'decision') ? 'drafting assessment'
+    : cur.events.some((e) => e.type === 'tool_call') ? 'investigating'
+    : 'waking'
 
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center gap-2 border-b border-line px-4 py-3">
         <h2 className="text-[0.78rem] font-medium text-ink">Agent trace</h2>
         {running ? (
-          <span className="flex items-center gap-1.5 font-mono text-[0.62rem] text-accent"><span className="lt-pulse size-1.5 rounded-full bg-accent" />reasoning</span>
-        ) : runs.length > 0 ? (
-          <span className="font-mono text-[0.62rem] text-muted">idle</span>
+          <span className="flex items-center gap-1.5 font-mono text-[0.62rem] text-accent"><span className="lt-pulse size-1.5 rounded-full bg-accent" />{status}</span>
+        ) : status ? (
+          <span className={`font-mono text-[0.62rem] ${status === 'error' ? 'text-failed' : 'text-muted'}`}>{status === 'done' ? 'run complete' : status}</span>
         ) : null}
       </div>
       <div
         ref={scroller}
-        onScroll={(e) => { const el = e.currentTarget; pinned.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80 }}
-        className="scroll-quiet min-h-0 flex-1 space-y-8 overflow-y-auto px-4 py-4"
+        // Only a user gesture can unpin: content growth and scroll anchoring must not stop the follow.
+        onWheel={() => { userScroll.current = Date.now() }}
+        onTouchMove={() => { userScroll.current = Date.now() }}
+        onPointerDown={() => { userScroll.current = Date.now() }}
+        onKeyDown={() => { userScroll.current = Date.now() }}
+        onScroll={(e) => {
+          const el = e.currentTarget
+          const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80
+          if (atBottom) pinned.current = true
+          else if (Date.now() - userScroll.current < 600) pinned.current = false
+        }}
+        className="scroll-quiet min-h-0 flex-1 overflow-y-auto px-4 py-4 [overflow-anchor:none]"
       >
+        <div ref={content} className="space-y-8">
         {runs.length === 0 ? (
           <p className="max-w-[34ch] text-[0.78rem] leading-6 text-muted">{idleHint ?? 'Nothing to do. The agent sleeps until onboard FDIR raises an event.'}</p>
         ) : (
           runs.map((r) => <RunView key={r.id} run={r} frames={frames} onOpen={onOpen} />)
         )}
+        </div>
       </div>
       {u.calls > 0 && (
         <footer className="grid grid-cols-4 gap-2 border-t border-line px-4 py-2.5 font-mono text-[0.62rem] text-muted">

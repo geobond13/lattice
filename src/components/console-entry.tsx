@@ -13,8 +13,10 @@ const LatticeScene3D = dynamic(() => import('@/scene').then((mod) => mod.Lattice
 
 const noop = () => () => {}
 
-function RealConsole() {
-  const agent = useAgentRuns()
+/** Recorded runs keep their real pacing, but no single model pause lasts longer than `?pace=` seconds (default 6). */
+function RealConsole({ search }: { search: string }) {
+  const pace = Number(new URLSearchParams(search).get('pace') ?? 6)
+  const agent = useAgentRuns({ maxGapMs: Number.isFinite(pace) && pace > 0 ? pace * 1000 : undefined })
   return <Console api={realApi} agent={agent} Scene={LatticeScene3D} />
 }
 
@@ -34,5 +36,5 @@ export function ConsoleEntry() {
     )
   }
   const q = new URLSearchParams(search)
-  return q.get('mock') === '1' ? <MockConsole scene3d={q.get('scene') === '3d'} /> : <RealConsole />
+  return q.get('mock') === '1' ? <MockConsole scene3d={q.get('scene') === '3d'} /> : <RealConsole search={search} />
 }

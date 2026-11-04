@@ -5,7 +5,7 @@ import { useState } from 'react'
 import type { CameraFrame, Segment } from '@/contracts'
 import { FrameOverlay } from './frame-overlay'
 
-export function CameraFeed({ frames, segments, capturing, onOpen }: { frames: CameraFrame[]; segments: Segment[]; capturing: boolean; onOpen: (id: string) => void }) {
+export function CameraFeed({ frames, segments, capturing, onOpen, compact }: { frames: CameraFrame[]; segments: Segment[]; capturing: boolean; onOpen: (id: string) => void; compact?: boolean }) {
   // Follow the frame SAM last worked on until the operator picks one.
   const [picked, setPicked] = useState<string | null>(null)
   const latestSeg = segments[segments.length - 1]?.frame
@@ -24,6 +24,19 @@ export function CameraFeed({ frames, segments, capturing, onOpen }: { frames: Ca
   }
 
   const segs = segments.filter((s) => s.frame === frame.id)
+  if (compact) {
+    return (
+      <button type="button" onClick={() => onOpen(frame.id)} className="glass lt-rise block w-full overflow-hidden rounded-lg text-left" title={`${frame.id} · ${frame.label}`}>
+        <div className="relative">
+          <FrameOverlay frame={frame} segments={segs} compact />
+          <span className="absolute top-1.5 left-1.5 flex items-center gap-1 rounded-[3px] bg-black/60 px-1 py-px font-mono text-[0.52rem] tracking-[0.1em] text-ink uppercase">
+            <span className="lt-pulse size-1 rounded-full bg-failed" /> Live · {frame.id}
+          </span>
+          {segs.length > 0 && <span className="absolute right-1.5 bottom-1 font-mono text-[0.52rem] text-accent">SAM · {segs.length} seg</span>}
+        </div>
+      </button>
+    )
+  }
   return (
     <div className="glass overflow-hidden rounded-xl">
       <div className="relative">

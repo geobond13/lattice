@@ -8,7 +8,7 @@ import type { MissionApi } from '@/ui/api'
 import { useMission } from '@/ui/use-mission'
 import { CameraFeed } from './camera-feed'
 import { ConfirmDialog } from './confirm-dialog'
-import { DecisionCard } from './decision-card'
+import { DecisionBar, DecisionCard } from './decision-card'
 import { FleetPanel } from './fleet-panel'
 import { Hero } from './hero'
 import { RecordDrawer } from './record-drawer'
@@ -17,6 +17,9 @@ import { Telemetry } from './telemetry'
 import { TopBar } from './top-bar'
 import { TracePane } from './trace/trace-pane'
 import { VoiceButton } from './voice-button'
+
+/** How long the full decision card holds after ops begin before collapsing to the bar. */
+const DECISION_HOLD_MS = 4000
 
 export type SceneComponent = ComponentType<LatticeSceneProps & { ref?: Ref<LatticeSceneHandle> }>
 
@@ -80,6 +83,18 @@ export function Console({ api, agent, Scene, mock }: { api: MissionApi; agent: U
     else setOpenId(id)
   }, [citations])
 
+  // During ops the big inset + card collapse (after a ~4 s hold on the decision) so the robot stays in view.
+  const pk = m.primary?.key ?? null
+  const opsLike = m.phase === 'ops' || m.phase === 'resolved'
+  const [compactKey, setCompactKey] = useState<string | null>(null)
+  const [expanded, setExpanded] = useState(false)
+  useEffect(() => {
+    if (!opsLike || !pk || compactKey === pk) return
+    const h = window.setTimeout(() => { setCompactKey(pk); setExpanded(false) }, DECISION_HOLD_MS)
+    return () => window.clearTimeout(h)
+  }, [opsLike, pk, compactKey])
+  const compact = opsLike && pk != null && compactKey === pk
+
   const idle = m.phase === 'idle'
   const showMission = !idle && !fleetMode
   const confirmEntry = m.confirm ? m.entries.find((e) => e.key === m.confirm!.key) : null
@@ -128,7 +143,17 @@ export function Console({ api, agent, Scene, mock }: { api: MissionApi; agent: U
 
       {/* ── centre: overlays over the scene + bottom strip ── */}
       <main className="pointer-events-none relative z-10 order-2 flex flex-col gap-3 px-3 lg:absolute lg:top-[68px] lg:right-[464px] lg:bottom-3 lg:left-[308px] lg:px-0">
-        {showMission && (
+        {showMission && (compact ? (
+          <div className="flex items-start gap-3">
+            <div className="pointer-events-auto w-[160px] shrink-0 sm:w-[220px]">
+              <CameraFeed compact frames={m.frames} segments={m.segments} capturing={false} onOpen={open} />
+            </div>
+            <div className="pointer-events-auto flex min-w-0 flex-1 flex-col items-center gap-2 lg:pr-[120px]">
+              <DecisionBar m={m} expanded={expanded} onToggle={() => setExpanded((x) => !x)} />
+              {expanded && <div className="w-full max-w-[400px]"><DecisionCard m={m} onOpen={open} /></div>}
+            </div>
+          </div>
+        ) : (
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div className="pointer-events-auto w-full lg:w-[min(420px,52%)]">
               {(m.phase !== 'armed' || m.frames.length > 0) && <CameraFeed frames={m.frames} segments={m.segments} capturing={m.phase === 'waking'} onOpen={open} />}
@@ -137,7 +162,7 @@ export function Console({ api, agent, Scene, mock }: { api: MissionApi; agent: U
               <DecisionCard m={m} onOpen={open} />
             </div>
           </div>
-        )}
+        ))}
         <div className="hidden flex-1 lg:block" />
         {showMission && (
           <section className="glass pointer-events-auto rounded-xl px-4 pt-3 pb-3.5">

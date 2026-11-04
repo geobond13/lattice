@@ -170,3 +170,38 @@ export function DecisionCard({ m, onOpen }: { m: Mission; onOpen: (id: string) =
     </div>
   )
 }
+
+/** Compact ops-time bar: tier + action + live proximity-ops phase, progress and range. Click to expand the full card. */
+export function DecisionBar({ m, expanded, onToggle }: { m: Mission; expanded: boolean; onToggle: () => void }) {
+  const e = m.primary
+  if (!e) return null
+  const d = e.decision
+  const b = BADGE[e.status]
+  const ex = m.primaryExec
+  const ops = ex?.decision.ops
+  const tau = ex ? Math.max(0, m.t - ex.startT) : 0
+  const p = ops ? Math.min(1, tau / ops.duration) : 0
+  const done = p >= 1
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={expanded}
+      className="glass lt-rise flex w-full max-w-[480px] items-center gap-3 rounded-full py-1.5 pr-4 pl-1.5 text-left transition-colors hover:border-line-2"
+    >
+      <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2 py-0.5 font-mono text-[0.56rem] tracking-[0.12em] uppercase ${b.cls}`}>
+        <span className={`size-1.5 rounded-full ${b.dot}`} />
+        {e.status === 'executing' ? (d.tier === 'gated' ? 'Approved' : 'Autonomous') : b.text}
+      </span>
+      <span className="shrink-0 text-[0.76rem] text-ink">{ACTION_LABEL[d.action]} <span className="text-muted">{d.params.module}</span></span>
+      <span className="min-w-0 flex-1 truncate text-[0.72rem] text-ink-2">{done ? 'Complete · servicer clear' : m.pose.phaseLabel}</span>
+      {ops && (
+        <span className="hidden h-1 w-16 shrink-0 overflow-hidden rounded-full bg-line sm:block">
+          <span className="block h-full bg-accent" style={{ width: `${p * 100}%` }} />
+        </span>
+      )}
+      {!done && <span className="num shrink-0 text-[0.68rem] text-ink-2">{m.pose.range.toFixed(1)} m</span>}
+      <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden className={`shrink-0 text-muted transition-transform ${expanded ? 'rotate-180' : ''}`}><path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.3" fill="none" /></svg>
+    </button>
+  )
+}

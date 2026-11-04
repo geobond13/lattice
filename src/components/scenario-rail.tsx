@@ -2,6 +2,7 @@
 
 import type { Mission, SceneView, Warp } from '@/ui/use-mission'
 import { fmtT } from '@/ui/format'
+import { MissionTimeline } from './mission-timeline'
 
 export type RailTab = 'scenarios' | 'fleet'
 
@@ -34,7 +35,8 @@ export function ScenarioRail({ m, tab, setTab }: { m: Mission; tab: RailTab; set
 
       {tab === 'scenarios' ? (
         <>
-          <div className="scroll-quiet min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
+          {idle ? (
+            <div className="scroll-quiet min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
             {m.scenarioIds.map((id, i) => {
               const s = m.scenarios[id]
               const on = id === m.scenario
@@ -61,6 +63,34 @@ export function ScenarioRail({ m, tab, setTab }: { m: Mission; tab: RailTab; set
               )
             })}
           </div>
+          ) : (
+            <div className="scroll-quiet min-h-0 flex-1 overflow-y-auto p-3">
+              <ul className="space-y-1">
+                {m.scenarioIds.map((id, i) => {
+                  const s = m.scenarios[id]
+                  const on = id === m.scenario
+                  return (
+                    <li key={id}>
+                      <button
+                        type="button"
+                        onClick={() => m.setScenario(id)}
+                        aria-pressed={on}
+                        className={`flex w-full items-center gap-2 rounded-md border px-2.5 py-1.5 text-left transition-colors ${on ? 'border-accent/45 bg-accent-soft/50' : 'border-transparent hover:border-line'}`}
+                      >
+                        <span className={`font-mono text-[0.58rem] ${on ? 'text-accent' : 'text-faint'}`}>0{i + 1}</span>
+                        <span className={`min-w-0 flex-1 truncate text-[0.72rem] ${on ? 'text-ink' : 'text-muted'}`}>{s.title}</span>
+                        {on && <span className="lt-pulse size-1.5 shrink-0 rounded-full bg-accent" />}
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+              <div className="mt-4 border-t border-line pt-3">
+                <p className="eyebrow mb-2.5">Mission timeline</p>
+                <MissionTimeline m={m} />
+              </div>
+            </div>
+          )}
 
           <div className="space-y-3 border-t border-line p-3">
             <div className="flex items-center gap-2">
