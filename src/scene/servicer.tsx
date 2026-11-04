@@ -6,7 +6,7 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import type { ArmPose, ScenePose, Vec3 } from '@/contracts'
 import { crinkleTex } from './textures'
-import { ExhaustCone } from './effects'
+import { ExhaustCone, Plume } from './effects'
 import { RadiatorPanel } from './module'
 
 export const SERVICER_HALF = 0.7
@@ -17,6 +17,7 @@ export const SERVICER_CAM_LOCAL = new THREE.Vector3(0, 0.42, 0.74)
 export const SERVICER_CAM_FOV = 50
 
 const Y = new THREE.Vector3(0, 1, 0)
+const BURN_DIR: Vec3 = [0, 1, 0]
 const FWD = new THREE.Vector3(0, 0, 1)
 
 interface ArmRig {
@@ -128,9 +129,14 @@ function ServicerImpl({ poseRef, groupRef, fruKind, fruDamaged, fruDamageAt, fru
   const thrust = useRef(0)
   const fruRef = useRef<THREE.Group>(null)
   const fruFirst = useRef(true)
+  // Main burn: twin canted plumes opposite the direction of travel (they clear anything held in front).
+  const burnL = useRef<THREE.Group>(null)
+  const burnR = useRef<THREE.Group>(null)
+  const burn = useRef(0)
+  const motion = useMemo(() => ({ prev: new THREE.Vector3(), vel: new THREE.Vector3(), init: false, perp: new THREE.Vector3(), d: new THREE.Vector3(), q: new THREE.Quaternion() }), [])
   const gold = useMemo(() => {
     const bump = crinkleTex()
-    return new THREE.MeshStandardMaterial({ color: '#e9b24e', metalness: 0.75, roughness: 0.48, roughnessMap: bump, emissive: '#4a2c06', emissiveIntensity: 0.25 })
+    return new THREE.MeshStandardMaterial({ color: '#e2aa48', metalness: 0.7, roughness: 0.55, roughnessMap: bump, emissive: '#4a2c06', emissiveIntensity: 0.2 })
   }, [])
   const spotTarget = useMemo(() => new THREE.Object3D(), [])
   const white = useMemo(() => new THREE.MeshStandardMaterial({ color: '#e9edf1', metalness: 0.2, roughness: 0.45 }), [])
@@ -174,6 +180,29 @@ function ServicerImpl({ poseRef, groupRef, fruKind, fruDamaged, fruDamageAt, fru
       solveArm(rig, shoulder, rig.eff, rig.app, rig.bend)
     })
 
+    // Velocity (scene time) of the smoothed body drives the burn plume orientation.
+    if (dt > 0) {
+      if (!motion.init) { motion.prev.copy(g.position); motion.init = true }
+      const inst = g.position.clone().sub(motion.prev).divideScalar(dt)
+      motion.prev.copy(g.position)
+      motion.vel.lerp(inst, 1 - Math.exp(-dt * 3))
+    }
+    const moving = motion.vel.length() > 0.05
+    burn.current += ((moving ? thrust.current : 0) - burn.current) * (1 - Math.exp(-dt * 6))
+    if (burnL.current && burnR.current) {
+      const back = motion.d.copy(motion.vel).normalize().negate()
+      motion.perp.crossVectors(back, new THREE.Vector3(0, 1, 0))
+      if (motion.perp.lengthSq() < 1e-4) motion.perp.set(1, 0, 0)
+      motion.perp.normalize()
+      ;[burnL.current, burnR.current].forEach((b, i) => {
+        const s = i === 0 ? 1 : -1
+        b.visible = burn.current > 0.04
+        b.position.copy(g.position).addScaledVector(motion.perp, s * 0.75).addScaledVector(back, 0.55)
+        const dir = back.clone().addScaledVector(motion.perp, s * 0.6).normalize()
+        b.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir)
+      })
+    }
+
     const fr = fruRef.current
     const fp = poseRef.current.fru
     if (fr) {
@@ -189,7 +218,8 @@ function ServicerImpl({ poseRef, groupRef, fruKind, fruDamaged, fruDamageAt, fru
     }
   })
 
-  const level = () => thrust.current
+  const level = () => thrust.current * 0.6
+  const burnLevel = () => burn.current
   const rcs: { p: Vec3; d: Vec3 }[] = [
     { p: [0.55, 0.55, -0.72], d: [0, 0, -1] }, { p: [-0.55, 0.55, -0.72], d: [0, 0, -1] },
     { p: [0.55, -0.55, -0.72], d: [0, 0, -1] }, { p: [-0.55, -0.55, -0.72], d: [0, 0, -1] },
@@ -273,9 +303,15 @@ function ServicerImpl({ poseRef, groupRef, fruKind, fruDamaged, fruDamageAt, fru
         ))}
         {rigs.map((rig, i) => <Arm key={i} rig={rig} white={white} />)}
       </group>
+      {[burnL, burnR].map((ref, i) => (
+        <group key={i} ref={ref} visible={false}>
+          <ExhaustCone position={[0, 0, 0]} dir={BURN_DIR} length={3.6} radius={0.42} color="#a8dcff" intensity={2.6} level={burnLevel} />
+          <Plume position={[0, 0.1, 0]} dir={BURN_DIR} count={260} life={0.6} speed={7} spread={0.1} size={0.06} grow={0.8} colorA="#ffffff" colorB="#8cc8ff" intensity={1.2} level={burnLevel} />
+        </group>
+      ))}
       <group ref={fruRef} visible={false}>
         {fruKind && (
-          <RadiatorPanel normalSign={fruKind === 'radiator_a' ? 1 : -1} damageAt={fruDamaged ? fruDamageAt ?? [0.75, 0.45, 0] : null} latchAt={fruLatchAt ?? null} heat={0.08} />
+          <RadiatorPanel normalSign={fruKind === 'radiator_a' ? 1 : -1} damageAt={fruDamaged ? fruDamageAt ?? [0.75, 0.45, 0] : null} latchAt={fruLatchAt ?? null} tone={fruDamaged ? 'damaged' : 'new'} />
         )}
       </group>
     </>

@@ -43,12 +43,14 @@ export const RAD_W = 2.8
 export const RAD_H = 1.6
 
 /** Radiator panel centred at the origin; outward normal is +Z * normalSign. Damage/latch offsets are panel-local. */
-export function RadiatorPanel({ normalSign, damageAt, latchAt, venting, heat = 0.5 }: {
+export function RadiatorPanel({ normalSign, damageAt, latchAt, venting, heat = 0.5, tone = 'normal' }: {
   normalSign: 1 | -1
   damageAt?: Vec3 | null
   latchAt?: Vec3 | null
   venting?: boolean
   heat?: number
+  /** 'damaged': sooty, cold, dark. 'new': bright, glowing tubes and a cyan edge (fresh FRU). */
+  tone?: 'normal' | 'damaged' | 'new'
 }) {
   const out = normalSign * 0.026
   const ventDir = useMemo(() => norm([-0.35, 0.25, normalSign * 1]), [normalSign])
@@ -59,17 +61,17 @@ export function RadiatorPanel({ normalSign, damageAt, latchAt, venting, heat = 0
         <meshStandardMaterial
           map={radiatorTex()}
           emissiveMap={radiatorGlowTex()}
-          emissive="#ffd9a8"
-          emissiveIntensity={heat}
+          emissive={tone === 'new' ? '#e6f7ff' : '#ffd9a8'}
+          emissiveIntensity={tone === 'damaged' ? 0 : tone === 'new' ? 1.6 : heat}
           metalness={0.15}
-          roughness={0.35}
-          color="#ffffff"
+          roughness={tone === 'damaged' ? 0.8 : 0.35}
+          color={tone === 'damaged' ? '#948a7e' : '#ffffff'}
         />
       </mesh>
       {/* Edge frame for a crisp silhouette. */}
       <mesh position={[0, 0, -normalSign * 0.035]}>
         <boxGeometry args={[RAD_W + 0.06, RAD_H + 0.06, 0.03]} />
-        <meshStandardMaterial color="#3d4652" metalness={0.7} roughness={0.4} />
+        <meshStandardMaterial color="#3d4652" metalness={0.7} roughness={0.4} emissive={tone === 'damaged' ? '#ff5d5d' : '#59d6ff'} emissiveIntensity={tone === 'new' ? 2.2 : tone === 'damaged' ? 0.9 : 0} />
       </mesh>
       {latchAt && <Latch position={[latchAt[0], latchAt[1], out]} normalSign={normalSign} />}
       {damageAt && (
@@ -421,6 +423,7 @@ function ComputeModuleImpl({ geom, status, util, generation, damage, poseRef, ra
                   damageAt={r.damaged ? panelLocal(f.damage, r.c) : null}
                   venting={r.damaged}
                   heat={r.damaged ? 0.05 : heat}
+                  tone={dmgOn === r.id && radiator === 'repaired' ? 'new' : 'normal'}
                 />
                 {[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([i, j]) => (
                   <mesh key={`${i}${j}`} position={[i * 1.1, j * 0.55, -sideOf(r.c) * 0.06]} rotation={[Math.PI / 2, 0, 0]}>

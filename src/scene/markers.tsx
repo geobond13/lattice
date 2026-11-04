@@ -4,12 +4,23 @@ import { memo, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Billboard, Line } from '@react-three/drei'
 import * as THREE from 'three'
-import type { Segment, Vec3 } from '@/contracts'
+import type { LatticeLayout, ScenePose, Segment, Vec3 } from '@/contracts'
 import { ACCENT } from './geometry'
 
 const CYAN = new THREE.Color(ACCENT).multiplyScalar(2.2)
 
-function Reticle({ seg, point, phase }: { seg: Segment; point: Vec3; phase: number }) {
+function Reticle({ seg, point, phase, layout, poseRef }: { seg: Segment; point: Vec3; phase: number; layout?: LatticeLayout; poseRef?: React.RefObject<ScenePose> }) {
+  const root = useRef<THREE.Group>(null)
+  // The module this point sits on (nearest docked pose within 3 m): hide the marker once that module moves away.
+  const owner = useMemo(() => {
+    if (!layout) return null
+    let best: { id: string; d: number; p: Vec3 } | null = null
+    for (const m of layout.modules) {
+      const d = Math.hypot(m.position[0] - point[0], m.position[1] - point[1], m.position[2] - point[2])
+      if (d < 3 && (!best || d < best.d)) best = { id: m.id, d, p: m.position }
+    }
+    return best
+  }, [layout, point])
   const ring = useRef<THREE.Group>(null)
   const leaderEnd = useMemo<Vec3>(() => {
     const out = new THREE.Vector3(point[0], 0, point[2])
@@ -38,12 +49,16 @@ function Reticle({ seg, point, phase }: { seg: Segment; point: Vec3; phase: numb
     return { tex, scale: [w * k, 40 * k, 1] as [number, number, number] }
   }, [text])
   useFrame((s) => {
+    if (root.current && owner && poseRef?.current) {
+      const o = poseRef.current.modules[owner.id]
+      root.current.visible = !o || (o.visible !== false && Math.hypot(o.position[0] - owner.p[0], o.position[1] - owner.p[1], o.position[2] - owner.p[2]) < 0.5)
+    }
     const t = s.clock.elapsedTime + phase
     const k = 1 + 0.18 * Math.sin(t * 4)
     ring.current?.scale.setScalar(k)
   })
   return (
-    <group position={point}>
+    <group ref={root} position={point}>
       <Billboard>
         <group ref={ring}>
           <mesh>
@@ -70,10 +85,10 @@ function Reticle({ seg, point, phase }: { seg: Segment; point: Vec3; phase: numb
   )
 }
 
-function MarkersImpl({ markers, groupRef }: { markers: Segment[]; groupRef?: React.RefObject<THREE.Group | null> }) {
+function MarkersImpl({ markers, groupRef, layout, poseRef }: { markers: Segment[]; groupRef?: React.RefObject<THREE.Group | null>; layout?: LatticeLayout; poseRef?: React.RefObject<ScenePose> }) {
   return (
     <group ref={groupRef} name="markers" renderOrder={20}>
-      {markers.map((s, i) => (s.point ? <Reticle key={s.id} seg={s} point={s.point} phase={i * 0.9} /> : null))}
+      {markers.map((s, i) => (s.point ? <Reticle key={s.id} seg={s} point={s.point} phase={i * 0.9} layout={layout} poseRef={poseRef} /> : null))}
     </group>
   )
 }

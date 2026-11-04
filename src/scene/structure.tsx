@@ -134,6 +134,11 @@ function Hub() {
   )
 }
 
+/** Wing geometry, for the camera's occlusion test: plane through the Y axis at this yaw, |lateral| ≤ half-width. */
+export const WING_YAW = Math.atan2(SUN_DIR.x, SUN_DIR.z)
+export const WING_HALF_WIDTH = 4.0
+export const WING_Y: [number, number] = [3.6, 34]
+
 function Wings() {
   const tex = useMemo(() => {
     const t = solarTex().clone()
@@ -143,7 +148,7 @@ function Wings() {
     return t
   }, [])
   // Sun-tracking: the wing plane contains Y and faces the sun's horizontal direction.
-  const yaw = Math.atan2(SUN_DIR.x, SUN_DIR.z)
+  const yaw = WING_YAW
   const blankets = [0, 1, 2, 3, 4, 5]
   const len = 4.6, width = 3.6
   return (

@@ -53,8 +53,17 @@ function SceneContents(props: LatticeSceneProps & { captureRef: React.RefObject<
   useFrame(() => {
     if (!focusGeom) { focusPos.current = null; return }
     const o = pose.modules[focusGeom.id]
-    focusPos.current = o && o.visible !== false ? o.position : focusGeom.position
+    // Overview frames the slot (after a swap the spare sits there); follow tracks the module wherever it goes.
+    focusPos.current = view !== 'overview' && o && o.visible !== false ? o.position : focusGeom.position
   })
+
+  // Ops-shot side: the side of the module where the work happens (damage / FRU), module-local ±Z.
+  const sideHint: 1 | -1 = useMemo(() => {
+    if (pose.fru) return pose.fru.kind === 'radiator_a' ? 1 : -1
+    const dz = focusGeom ? featuresOf(focusGeom, damage).damage?.[2] : undefined
+    return dz !== undefined && dz > 0.3 ? 1 : -1
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusGeom, damage, pose.fru?.kind])
 
   // Carried-FRU decal/latch offsets in panel-local coordinates (from the focus module's features).
   const fruKind = pose.fru?.kind ?? null
@@ -109,8 +118,8 @@ function SceneContents(props: LatticeSceneProps & { captureRef: React.RefObject<
         )
       })}
       <Servicer poseRef={poseRef} groupRef={servicerRef} fruKind={fruKind} fruDamaged={!!pose.fru?.damaged} fruDamageAt={fruOffsets.dmg} fruLatchAt={fruOffsets.latch} />
-      <Markers markers={markers ?? NO_MARKERS} groupRef={markersRef} />
-      <CameraRig view={view} focusPos={focusPos} servicer={servicerRef} />
+      <Markers markers={markers ?? NO_MARKERS} groupRef={markersRef} layout={layout} poseRef={poseRef} />
+      <CameraRig view={view} focusPos={focusPos} servicer={servicerRef} layout={layout} poseRef={poseRef} focus={focus} sideHint={sideHint} />
       {quality === 'high' && (
         <EffectComposer multisampling={4}>
           <Bloom mipmapBlur intensity={0.7} luminanceThreshold={0.95} luminanceSmoothing={0.15} radius={0.72} />
