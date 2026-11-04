@@ -1,5 +1,5 @@
 // Public surface of the 3D scene (owned by the scene workstream). STUB: signatures frozen.
-import type { CameraFrame, LatticeLayout, ModuleId, ModuleStatus, ScenePose, Segment } from '@/contracts'
+import type { CameraFrame, Generation, LatticeLayout, ModuleId, ModuleStatus, ScenePose, Segment } from '@/contracts'
 
 export interface LatticeSceneProps {
   layout: LatticeLayout
@@ -15,6 +15,15 @@ export interface LatticeSceneProps {
   /** Camera mode: cinematic overview orbit, follow the servicer, or the servicer's own camera. */
   view: 'overview' | 'follow' | 'servicer'
   className?: string
+  /**
+   * Optional: hardware generation per module (1–4). Shown as a subtle trim band (dim steel blue → cyan-white)
+   * and panel finish; a change plays a short swap shimmer. Spares default to Gen-2, others to Gen-1.
+   */
+  generations?: Record<ModuleId, Generation>
+  /** Optional: 'low' drops bloom, star count and Earth detail (headless / weak GPUs). Default 'high'. */
+  quality?: 'high' | 'low'
+  /** Optional: force the radiator FRU shown as repaired (otherwise inferred from pose.phase / pose.fru). */
+  repaired?: boolean
 }
 
 export interface LatticeSceneHandle {
@@ -26,3 +35,5 @@ export interface LatticeSceneHandle {
 }
 
 export { LatticeScene } from './lattice-scene'
+export { inspectionStations, INSPECTION_WIDTH, INSPECTION_HEIGHT, INSPECTION_FOV } from './geometry'
+export type { InspectionStation } from './geometry'

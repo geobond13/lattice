@@ -1,0 +1,80 @@
+[
+  {
+    "id": "CAM-1",
+    "label": "Fly-around, 12 m, +R",
+    "src": "/frames/radiator-puncture/CAM-1.jpg",
+    "width": 1024,
+    "height": 768,
+    "camera": {
+      "position": [
+        -16.252782039521854,
+        2.9995217980363345,
+        -19.152078862685748
+      ],
+      "target": [
+        -7.000000000000006,
+        0,
+        -12.124355652982137
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "fovDeg": 40
+    },
+    "module": "M-09"
+  },
+  {
+    "id": "CAM-2",
+    "label": "Damage site close-up, 4 m",
+    "src": "/frames/radiator-puncture/CAM-2.jpg",
+    "width": 1024,
+    "height": 768,
+    "camera": {
+      "position": [
+        -12.424549966899725,
+        1.5966421106976323,
+        -11.969004399197637
+      ],
+      "target": [
+        -8.568153532995465,
+        0.56,
+        -12.20047724619891
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "fovDeg": 50
+    },
+    "module": "M-09"
+  },
+  {
+    "id": "CAM-3",
+    "label": "Grapple fixture + latch B, 4 m",
+    "src": "/frames/radiator-puncture/CAM-3.jpg",
+    "width": 1024,
+    "height": 768,
+    "camera": {
+      "position": [
+        -11.593040149906543,
+        1.5727909432167473,
+        -15.07382016085711
+      ],
+      "target": [
+        -8.321576766497735,
+        0.4,
+        -13.093393758658795
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "fovDeg": 50
+    },
+    "module": "M-09"
+  }
+]

@@ -1,0 +1,80 @@
+[
+  {
+    "id": "CAM-1",
+    "label": "Fly-around, 12 m, +R",
+    "src": "/frames/power-bus-short/CAM-1.jpg",
+    "width": 1024,
+    "height": 768,
+    "camera": {
+      "position": [
+        4.499282697054505,
+        2.9995217980363345,
+        24.712577850129765
+      ],
+      "target": [
+        8.572527594031472e-16,
+        0,
+        14
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "fovDeg": 40
+    },
+    "module": "M-04"
+  },
+  {
+    "id": "CAM-2",
+    "label": "Damage site close-up, 4 m",
+    "src": "/frames/power-bus-short/CAM-2.jpg",
+    "width": 1024,
+    "height": 768,
+    "camera": {
+      "position": [
+        1.2171711198762858,
+        -4.07339927971133,
+        16.345285199793807
+      ],
+      "target": [
+        -0.09999999999999912,
+        -1,
+        14.15
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "fovDeg": 50
+    },
+    "module": "M-04"
+  },
+  {
+    "id": "CAM-3",
+    "label": "Grapple fixture + latch B, 4 m",
+    "src": "/frames/power-bus-short/CAM-3.jpg",
+    "width": 1024,
+    "height": 768,
+    "camera": {
+      "position": [
+        2.5029571964834627,
+        1.5727909432167473,
+        18.850831266333564
+      ],
+      "target": [
+        0.6600000000000013,
+        0.4,
+        15.5
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "fovDeg": 50
+    },
+    "module": "M-04"
+  }
+]
