@@ -4,7 +4,6 @@ import { runAgent } from '@/agent/loop'
 import { defaultFrames, resolveFrames, validateFrames } from '@/agent/frames'
 import { hasMetaKey } from '@/meta/client'
 
-export const runtime = 'nodejs'
 export const maxDuration = 300
 
 const SCENARIOS: ScenarioId[] = ['radiator-puncture', 'power-bus-short', 'thruster-stuck']

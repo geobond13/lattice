@@ -3,7 +3,6 @@
 import { errorMessage, hasMetaKey } from '@/meta/client'
 import { transcribe, wavProblem } from '@/meta/transcribe'
 
-export const runtime = 'nodejs'
 export const maxDuration = 60
 
 const MAX_BYTES = 2_000_000 // ~60 s at 16 kHz mono 16-bit
