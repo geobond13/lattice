@@ -292,3 +292,30 @@ export interface ToolDef {
   parameters: Record<string, unknown>
   run(args: Record<string, unknown>, ctx: ToolCtx): ToolResult | Promise<ToolResult>
 }
+
+// ─── Fleet economics: the station outlives its chips ──────────────────────────────────────────────
+// GPUs go obsolete in 3–5 years; an orbital facility can't be upgraded in place. LATTICE refreshes
+// modules generation by generation (and turns failures into upgrades). Numbers are illustrative.
+
+export type Generation = 1 | 2 | 3 | 4
+
+export interface FleetModule {
+  module: ModuleId
+  generation: Generation
+  /** e.g. "Gen-1 · 2026-class GPU" */
+  gpu: string
+  installedYear: number
+  /** Compute per kW of bus power, normalised to Gen-1 = 1.0. */
+  perfPerKw: number
+}
+
+export interface FleetYear {
+  year: number
+  modules: FleetModule[]
+  /** LATTICE total compute, normalised to the 2027 Gen-1 lattice = 100. */
+  capacity: number
+  /** A monolithic station of the same launch mass: same chips forever, failures accumulate. */
+  monolithCapacity: number
+  /** Modules swapped that year (tech refresh + failures). */
+  swaps: number
+}

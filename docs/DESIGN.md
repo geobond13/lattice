@@ -11,6 +11,23 @@ A **deterministic envelope** decides whether the action runs on its own, waits f
 
 The thesis on screen: *"Make the data center modular, and make the robot that maintains it reason."*
 
+## Why modular: the station outlives its chips (the investor argument)
+GPUs go obsolete in 3–5 years, and an orbital data center can't be upgraded in place, so a monolithic facility is a
+stranded asset by the time it pays back. LATTICE swaps compute modules as the hardware ages, repairs or replaces failed
+ones, and deorbits dead ones. The result is lower depreciation risk and higher uptime.
+
+The three pieces:
+- **The standard:** a module interface for power, thermal, data and the grapple point (ICD-DOCK-01, ICD-GRP-01).
+- **The servicer:** the robot plus the spare-module depot.
+- **The brain:** autonomous diagnosis from each module's as-built record (SpaceGrade OS).
+
+How it shows up in the product:
+- **Failures become upgrades.** Spares are next-generation modules. In `power-bus-short`, spare S-1 is **Gen-2**, so the swap restores the slot *and* lifts its performance per kW about 2.4×.
+- **Fleet timeline 2027–2037** (sim `fleetTimeline()`): a rolling refresh in which each module serves about 4 years, then is swapped for the next generation (Gen-1 1.0, Gen-2 2.4, Gen-3 5.2, Gen-4 10 perf/kW).
+  - LATTICE capacity steps up over time.
+  - A monolith with the same launch mass stays flat, then decays as failures accumulate with no repair, and is stranded at its end of life.
+  - Numbers are illustrative and labelled so in the UI.
+
 ## Geometry (lattice frame, metres, Y up)
 - **Ring.** Radius 14, in the XZ plane. Central hub at the origin; two thin 30 m solar wings extend from the hub along the ring axis (±Y).
 - **Modules.**
