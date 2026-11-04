@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "eval": "tsx --env-file=.env.local scripts/eval.ts",
+    "record": "tsx --env-file=.env.local scripts/record.ts",
+    "frames:synth": "tsx scripts/synth-frames.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

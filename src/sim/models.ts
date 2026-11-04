@@ -137,7 +137,7 @@ export const T_LATCH_LIMIT = latchCrossing(THRUSTER.limit)
 // ─── M-04 bus short ──────────────────────────────────────────────────────────────────────────────
 export const BUS = { tFault: 90, v0: 120, loLimit: 100, capPct: 48, busBkW: 3.6 }
 export function busA(t: number): number {
-  return t < BUS.tFault ? BUS.v0 : BUS.v0 * Math.exp(-(t - BUS.tFault) / 1.5)
+  return t < BUS.tFault ? BUS.v0 : BUS.v0 * Math.exp(-(t - BUS.tFault) / 0.1) // breaker trip: effectively a step
 }
 
 /** Hazard time per scenario in the unmitigated model (s), or null. */

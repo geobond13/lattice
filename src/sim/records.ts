@@ -52,8 +52,8 @@ const R: ModuleRecord[] = [
   },
   {
     id: 'TR-1180', kind: 'test', module: 'M-09', title: 'M-09 thermal-vacuum test: single-loop rejection', date: '2026-02-09',
-    body: 'With loop B valved off, loop A alone rejected 6.1 kW at 85 °C GPU. The module dissipates 7.4 kW at 92 % util, so one loop holds only at ≤ 74 % util.',
-    values: { singleLoopKw: 6.1, atGpuC: 85, dissipationKw: 7.4, atUtilPct: 92, singleLoopMaxUtilPct: 74 },
+    body: 'With loop B valved off, loop A alone rejected 6.1 kW at 85 °C GPU. The module dissipates 7.4 kW at 92 % util, so one loop saturates at about 76 % util; with a 2-point thermal margin the single-loop limit is ≤ 74 % util.',
+    values: { singleLoopKw: 6.1, atGpuC: 85, dissipationKw: 7.4, atUtilPct: 92, singleLoopSaturationUtilPct: 76, singleLoopMaxUtilPct: 74 },
   },
   {
     id: 'TR-1176', kind: 'test', module: 'M-09', title: 'M-09 coolant loop proof-pressure and leak test', date: '2026-02-03',

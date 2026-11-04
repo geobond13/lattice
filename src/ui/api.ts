@@ -16,6 +16,8 @@ export interface MissionApi {
   channels(scenario: ScenarioId): ChannelSpec[]
   sample(scenario: ScenarioId, channelId: string, t0: number, t1: number, n: number, resolvedAt?: number): TelemetryPoint[]
   fdirEvents(scenario: ScenarioId): FdirEvent[]
+  /** The FDIR event that wakes the agent (defaults to the first event). */
+  wakeEvent?(scenario: ScenarioId): FdirEvent
   lattice(scenario: ScenarioId, t: number, executed: Executed[]): ModuleStates
   poseAt(ops: OpsTimeline | null, tau: number): ScenePose
   recordById(id: string): ModuleRecord | undefined
@@ -32,6 +34,7 @@ export const realApi: MissionApi = {
   channels: (s) => sim.channels(s),
   sample: (s, id, t0, t1, n, r) => sim.sample(s, id, t0, t1, n, r),
   fdirEvents: (s) => sim.fdirEvents(s),
+  wakeEvent: (s) => sim.wakeEvent(s),
   lattice: (s, t, ex) => sim.lattice(s, t, ex),
   poseAt: (ops, tau) => sim.poseAt(ops, tau),
   recordById: (id) => sim.recordById(id),

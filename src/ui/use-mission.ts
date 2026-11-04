@@ -53,6 +53,7 @@ export function useMission({ api, agent, sceneRef }: { api: MissionApi; agent: U
 
   const def = scenarios[scenario]
   const fdir = useMemo(() => api.fdirEvents(scenario), [api, scenario])
+  const wakeAt = useMemo(() => api.wakeEvent?.(scenario) ?? fdir[0], [api, scenario, fdir])
 
   // ── refs mirrored for the rAF loop ────────────────────────────────────────────────────────────
   const S = useRef({ t: 0, playing: false, warp: 30 as number, autoWarp: null as number | null, phase: 'idle' as MissionPhase, scenario, entries: [] as DecisionEntry[], processed: new Map<string, number>(), source: 'recorded' as RunSource })
@@ -126,7 +127,7 @@ export function useMission({ api, agent, sceneRef }: { api: MissionApi; agent: U
       if (s.playing) {
         const eff = s.autoWarp ?? s.warp
         let nt = s.t + dt * eff
-        const first = fdir[0]
+        const first = wakeAt
         if (s.phase === 'armed' && first && nt >= first.t) { nt = first.t; void wake(first) }
         // gated: stop fast-forward once a human is reachable
         const pending = s.entries.find((e) => e.status === 'pending')
@@ -161,7 +162,7 @@ export function useMission({ api, agent, sceneRef }: { api: MissionApi; agent: U
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [fdir, wake, ingest])
+  }, [wakeAt, wake, ingest])
 
   // ── commands ──────────────────────────────────────────────────────────────────────────────────
   const clearState = useCallback(() => {
