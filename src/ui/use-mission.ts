@@ -33,6 +33,8 @@ const RECOVERY_S = 900
 /** Give the scene this long to fly around before falling back. */
 const CAPTURE_TIMEOUT_MS = 15000
 
+declare global { interface Window { __latticeFrames?: { scenario: ScenarioId; frames: CameraFrame[] } } }
+
 export function useMission({ api, agent, sceneRef }: { api: MissionApi; agent: UseAgentRuns; sceneRef: RefObject<LatticeSceneHandle | null> }) {
   const scenarios = useMemo(() => api.scenarios(), [api])
   const scenarioIds = useMemo(() => api.scenarioIds(), [api])
@@ -87,6 +89,7 @@ export function useMission({ api, agent, sceneRef }: { api: MissionApi; agent: U
     if (!shots.length && api.fallbackFrames) shots = api.fallbackFrames(mod)
     if (S.current.scenario !== sc || S.current.phase !== 'waking') return // reset meanwhile
     setFrames(shots)
+    window.__latticeFrames = { scenario: sc, frames: shots } // read by scripts/capture-frames.mjs
     S.current.phase = 'agent'
     setPhase('agent')
     void agentRef.current.start({ scenario: sc, frames: shots.length ? shots : undefined, source: S.current.source })

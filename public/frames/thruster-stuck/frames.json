@@ -1,0 +1,80 @@
+[
+  {
+    "id": "CAM-1",
+    "label": "Fly-around, 12 m, +R",
+    "src": "/frames/thruster-stuck/CAM-1.jpg",
+    "width": 1024,
+    "height": 768,
+    "camera": {
+      "position": [
+        16.252782039521847,
+        2.9995217980363345,
+        -19.15207886268575
+      ],
+      "target": [
+        7.000000000000002,
+        0,
+        -12.12435565298214
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "fovDeg": 40
+    },
+    "module": "M-11"
+  },
+  {
+    "id": "CAM-2",
+    "label": "Damage site close-up, 4 m",
+    "src": "/frames/thruster-stuck/CAM-2.jpg",
+    "width": 1024,
+    "height": 768,
+    "camera": {
+      "position": [
+        10.650645184751834,
+        3.517093106282836,
+        -15.347860048336564
+      ],
+      "target": [
+        8.492820323027553,
+        1,
+        -13.109996299037242
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "fovDeg": 50
+    },
+    "module": "M-11"
+  },
+  {
+    "id": "CAM-3",
+    "label": "Grapple fixture + latch A, 4 m",
+    "src": "/frames/thruster-stuck/CAM-3.jpg",
+    "width": 1024,
+    "height": 768,
+    "camera": {
+      "position": [
+        11.593040149906539,
+        1.5727909432167473,
+        -15.073820160857114
+      ],
+      "target": [
+        8.321576766497731,
+        0.4,
+        -13.093393758658799
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "fovDeg": 50
+    },
+    "module": "M-11"
+  }
+]
