@@ -12,7 +12,7 @@ A **deterministic envelope** decides whether the action runs on its own, waits f
 The thesis on screen: *"Make the data center modular, and make the robot that maintains it reason."*
 
 ## Geometry (lattice frame, metres, Y up)
-- **Ring.** Radius 14, in the XZ plane. Hub at the origin, with two huge solar wings along ±Y? No: the solar wings run along ±X/±Z diagonals, 30 m long, thin.
+- **Ring.** Radius 14, in the XZ plane. Central hub at the origin; two thin 30 m solar wings extend from the hub along the ring axis (±Y).
 - **Modules.**
   - Each is a 3.2 (radial) × 2.0 (up) × 2.4 (along-ring) box. Slot k sits at angle θ = k·30°, at position (R·cos θ, 0, R·sin θ), with its local +X pointing radially outward.
   - **Faces:** `dock_port` on the −X face (toward the hub), the `grapple` fixture on the +X face centre, and `pdu_panel` on the −Y face.
