@@ -11,12 +11,15 @@ import { Wordmark } from './top-bar'
 
 const LatticeScene3D = dynamic(() => import('@/scene').then((mod) => mod.LatticeScene), { ssr: false }) as SceneComponent
 
-const noop = () => () => {}
+/** Re-read the query string on history changes (the demo recorder retunes replay pacing between scenes). */
+const onHistory = (cb: () => void) => { window.addEventListener('popstate', cb); return () => window.removeEventListener('popstate', cb) }
 
-/** Recorded runs keep their real pacing, but no single model pause lasts longer than `?pace=` seconds (default 6). */
+/** Recorded runs keep their real pacing, but no single model pause lasts longer than `?pace=` seconds (default 6); `?speed=` fast-forwards. */
 function RealConsole({ search }: { search: string }) {
-  const pace = Number(new URLSearchParams(search).get('pace') ?? 6)
-  const agent = useAgentRuns({ maxGapMs: Number.isFinite(pace) && pace > 0 ? pace * 1000 : undefined })
+  const q = new URLSearchParams(search)
+  const pace = Number(q.get('pace') ?? 6)
+  const speed = Number(q.get('speed') ?? 1)
+  const agent = useAgentRuns({ maxGapMs: Number.isFinite(pace) && pace > 0 ? pace * 1000 : undefined, speed: speed > 0 ? speed : 1 })
   return <Console api={realApi} agent={agent} Scene={LatticeScene3D} />
 }
 
@@ -27,7 +30,7 @@ function MockConsole({ scene3d }: { scene3d: boolean }) {
 
 /** `?mock=1` runs the console on the local mock layer; `&scene=3d` keeps mock data but uses the real 3D scene. */
 export function ConsoleEntry() {
-  const search = useSyncExternalStore(noop, () => window.location.search, () => null)
+  const search = useSyncExternalStore(onHistory, () => window.location.search, () => null)
   if (search == null) {
     return (
       <div className="flex h-dvh items-center justify-center bg-bg">

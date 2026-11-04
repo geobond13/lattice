@@ -28,6 +28,12 @@ export interface DecisionEntry {
 
 /** Ops play in about this many wall-clock seconds. */
 const OPS_WALL_S = 40
+/** Wall-clock seconds an ops timeline plays in (`?ops=` overrides, e.g. for the demo video). */
+const opsWallS = () => {
+  if (typeof window === 'undefined') return OPS_WALL_S
+  const v = Number(new URLSearchParams(window.location.search).get('ops'))
+  return v > 0 ? v : OPS_WALL_S
+}
 /** Seconds of recovery shown after ops end before the clock pauses. */
 const RECOVERY_S = 900
 /** Give the scene this long to fly around before falling back. */
@@ -99,7 +105,7 @@ export function useMission({ api, agent, sceneRef }: { api: MissionApi; agent: U
     if (d.action === 'MIGRATE_WORKLOADS' || !d.ops) return
     S.current.phase = 'ops'
     setPhase('ops')
-    setAutoWarp(Math.max(1, d.ops.duration / OPS_WALL_S))
+    setAutoWarp(Math.max(1, d.ops.duration / opsWallS()))
     setPlaying(true)
     void at
   }, [])
