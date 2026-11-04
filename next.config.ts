@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   // The agent route reads the pre-captured inspection frames from public/ at runtime.
   outputFileTracingIncludes: { '/api/agent': ['./public/frames/**/*'] },
   cacheComponents: true,
