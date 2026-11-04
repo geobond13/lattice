@@ -13,6 +13,19 @@ LATTICE is a new product idea from the team behind **SpaceGrade**, an aerospace 
 | **SpaceGradeOS** is the commercial PLM product. It keeps an as-built record of every part: tests, non-conformances and dispositions. | No SpaceGradeOS code or data is used. LATTICE's module records are written for this project. |
 | **spacegrade-agent** is an earlier agent demo on a different model provider. It covers single-spacecraft anomaly response. | It reused the *idea*: the as-built record acts as a virtual sensor, and a deterministic policy decides autonomy. It also reused the *pattern*: plan → tool calls → cited answer, streamed as NDJSON. Both were rewritten here against Meta's Model API for a new domain. No files were copied. |
 
+## The thesis
+GPUs go obsolete in 3–5 years, and an orbital data center can't be upgraded in place. That makes a monolithic facility a stranded asset by the time it pays back.
+
+LATTICE handles this by working on individual modules:
+- it swaps compute modules as their hardware ages;
+- it repairs or replaces modules that fail;
+- it deorbits modules that are dead.
+
+The station outlives its chips. The concept rests on three pieces:
+- **A standard.** One module interface covers power, thermal, data and the grapple point.
+- **A servicer.** A robot works alongside a depot of spare modules.
+- **A brain.** Diagnosis is autonomous and built on each module's as-built record.
+
 ## New in this hackathon
 - A modular orbital data center and its servicing simulation:
   - 12 docked compute modules, a two-armed servicer and spares;
