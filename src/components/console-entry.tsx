@@ -1,0 +1,38 @@
+'use client'
+
+import dynamic from 'next/dynamic'
+import { useSyncExternalStore } from 'react'
+import { useAgentRuns } from '@/agent/client'
+import { realApi } from '@/ui/api'
+import { MockScene } from '@/ui/mock-scene'
+import { mockApi, useMockAgentRuns } from '@/ui/mocks'
+import { Console, type SceneComponent } from './console'
+import { Wordmark } from './top-bar'
+
+const LatticeScene3D = dynamic(() => import('@/scene').then((mod) => mod.LatticeScene), { ssr: false }) as SceneComponent
+
+const noop = () => () => {}
+
+function RealConsole() {
+  const agent = useAgentRuns()
+  return <Console api={realApi} agent={agent} Scene={LatticeScene3D} />
+}
+
+function MockConsole({ scene3d }: { scene3d: boolean }) {
+  const agent = useMockAgentRuns()
+  return <Console api={mockApi} agent={agent} Scene={scene3d ? LatticeScene3D : (MockScene as SceneComponent)} mock />
+}
+
+/** `?mock=1` runs the console on the local mock layer; `&scene=3d` keeps mock data but uses the real 3D scene. */
+export function ConsoleEntry() {
+  const search = useSyncExternalStore(noop, () => window.location.search, () => null)
+  if (search == null) {
+    return (
+      <div className="flex h-dvh items-center justify-center bg-bg">
+        <span className="lt-pulse"><Wordmark /></span>
+      </div>
+    )
+  }
+  const q = new URLSearchParams(search)
+  return q.get('mock') === '1' ? <MockConsole scene3d={q.get('scene') === '3d'} /> : <RealConsole />
+}
