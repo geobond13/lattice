@@ -86,6 +86,8 @@ export async function runAgent(req: AgentRequest, emit: Emit, opts: RunOptions =
   const seen = new Map<string, Citation>()
   const addCitations = (cs: Citation[]) => { for (const c of cs) if (!seen.has(c.id)) seen.set(c.id, c) }
   for (const e of eventLog(scenario, event)) addCitations([cite(e.id, e.summary), cite(e.channel, `${e.channel} (FDIR channel)`)])
+  // The briefing lists the frames, so they are citable even if a vision call on one fails.
+  addCitations(frames.map((f) => ({ type: 'camera' as const, id: f.id, label: f.label })))
   const toolLog: ToolLog[] = []
   const decisions: Decision[] = []
 
